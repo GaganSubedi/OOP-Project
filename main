@@ -1,5 +1,286 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdio>
+#include <iomanip> // Added for setw() and left
+
+using namespace std;
+
+// Basic struct to hold customer data
+struct Customer {
+    string roomnumber;
+    string name;
+    string address;
+    string phonenumber;
+    string nationality;
+    string email;
+    string period;
+    string arrivaldate;
+};
+
+class HotelManager {
+private:
+    string filename = "customers.txt";
+
+    // Helper function to check if a room is already booked
+    bool roomExists(string room) {
+        ifstream file(filename);
+        Customer c;
+        // Read file line by line using '|' as the delimiter
+        while (getline(file, c.roomnumber, '|')) {
+            getline(file, c.name, '|');
+            getline(file, c.address, '|');
+            getline(file, c.phonenumber, '|');
+            getline(file, c.nationality, '|');
+            getline(file, c.email, '|');
+            getline(file, c.period, '|');
+            getline(file, c.arrivaldate); // Last field ends with newline
+
+            if (c.roomnumber == room) {
+                file.close();
+                return true;
+            }
+        }
+        file.close();
+        return false;
+    }
+
+    // Helper to print the table header neatly
+void printHeader() {
+    cout << left << setw(7) << "ROOM"
+         << setw(15) << "NAME"
+         << setw(15) << "ADDRESS"
+         << setw(15) << "PHONE"
+         << setw(13) << "NATIONALITY"
+         << setw(22) << "EMAIL"
+         << setw(10) << "PERIOD"
+         << setw(15) << "ARRIVAL" << "\n";
+}
+
+// Helper to print a single customer neatly
+void printCustomer(const Customer& c) {
+    cout << left << setw(7) << c.roomnumber
+         << setw(15) << c.name
+         << setw(15) << c.address
+         << setw(15) << c.phonenumber
+         << setw(13) << c.nationality
+         << setw(22) << c.email
+         << setw(10) << c.period
+         << setw(15) << c.arrivaldate << "\n";
+}
+
+public:
+    void addCustomer() {
+        Customer c;
+        cout << "Enter Room Number: ";
+        getline(cin, c.roomnumber);
+
+        if (roomExists(c.roomnumber)) {
+            cout << "Error: Room number " << c.roomnumber << " is already booked!\n";
+            return;
+        }
+
+        cout << "Enter Full Name: ";
+        getline(cin, c.name);
+        cout << "Enter Address: ";
+        getline(cin, c.address);
+        cout << "Enter Phone Number: ";
+        getline(cin, c.phonenumber);
+        cout << "Enter Nationality: ";
+        getline(cin, c.nationality);
+        cout << "Enter Email: ";
+        getline(cin, c.email);
+        cout << "Enter Period (days): ";
+        getline(cin, c.period);
+        cout << "Enter Arrival Date (dd-mm-yyyy): ";
+        getline(cin, c.arrivaldate);
+
+        // Open file in append mode
+        ofstream file(filename, ios::app);
+if(file.is_open()){
+    file << c.roomnumber << "|" << c.name << "|" << c.address << "|"
+         << c.phonenumber << "|" << c.nationality << "|" << c.email << "|"
+         << c.period << "|" << c.arrivaldate << "\n";
+    file.close();
+
+
+            cout << "----------------------------\n";
+            cout << "Customer added successfully!\n";
+            cout << "----------------------------\n";
+        } else {
+            cout << "Error: could not open data file.\n";
+        }
+    }
+
+    void displayCustomers() {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            cout << "No customers found.\n";
+            return;
+        }
+
+        string sep(113, '-');
+        cout << sep << "\n";
+        printHeader();
+        cout << sep << "\n";
+
+        Customer c;
+        bool found = false;
+
+        while (getline(file, c.roomnumber, '|')) {
+            getline(file, c.name, '|');
+            getline(file, c.address, '|');
+            getline(file, c.phonenumber, '|');
+            getline(file, c.nationality, '|');
+            getline(file, c.email, '|');
+            getline(file, c.period, '|');
+            getline(file, c.arrivaldate);
+
+            found = true;
+            printCustomer(c);
+        }
+
+        if (!found) {
+            cout << "No customers found.\n";
+        }
+        cout << sep << "\n";
+        file.close();
+    }
+
+    void searchCustomer(string room) {
+        ifstream file(filename);
+        Customer c;
+
+        while (getline(file, c.roomnumber, '|')) {
+            getline(file, c.name, '|');
+            getline(file, c.address, '|');
+            getline(file, c.phonenumber, '|');
+            getline(file, c.nationality, '|');
+            getline(file, c.email, '|');
+            getline(file, c.period, '|');
+            getline(file, c.arrivaldate);
+
+            if (c.roomnumber == room) {
+                string sep(113, '-');
+                cout << "Customer found:\n";
+                cout << sep << "\n";
+                printHeader();
+                cout << sep << "\n";
+                printCustomer(c);
+                cout << sep << "\n";
+                file.close();
+                return;
+            }
+        }
+        cout << "Customer with room number " << room << " not found.\n";
+        file.close();
+    }
+
+    void deleteCustomer(string room) {
+        ifstream file(filename);
+        ofstream temp("temp.txt");
+        Customer c;
+        bool found = false;
+
+        while (getline(file, c.roomnumber, '|')) {
+            getline(file, c.name, '|');
+            getline(file, c.address, '|');
+            getline(file, c.phonenumber, '|');
+            getline(file, c.nationality, '|');
+            getline(file, c.email, '|');
+            getline(file, c.period, '|');
+            getline(file, c.arrivaldate);
+
+            if (c.roomnumber == room) {
+                found = true; // Skip writing this customer to temp file
+            } else {
+                temp << c.roomnumber << "|" << c.name << "|" << c.address << "|"
+                     << c.phonenumber << "|" << c.nationality << "|" << c.email << "|"
+                     << c.period << "|" << c.arrivaldate << "\n";
+            }
+        }
+
+        file.close();
+        temp.close();
+
+        // Replace old file with new file
+        remove("customers.txt");
+        rename("temp.txt", "customers.txt");
+
+        if (found) {
+            cout << "----------------------------\n";
+            cout << "Customer deleted successfully!\n";
+            cout << "----------------------------\n";
+        } else {
+            cout << "----------------------------\n";
+            cout << "Customer not found!\n";
+            cout << "----------------------------\n";
+        }
+    }
+
+    void updateCustomer(string room) {
+        ifstream file(filename);
+        ofstream temp("temp.txt");
+        Customer c;
+        bool found = false;
+
+        while (getline(file, c.roomnumber, '|')) {
+            getline(file, c.name, '|');
+            getline(file, c.address, '|');
+            getline(file, c.phonenumber, '|');
+            getline(file, c.nationality, '|');
+            getline(file, c.email, '|');
+            getline(file, c.period, '|');
+            getline(file, c.arrivaldate);
+
+            if (c.roomnumber == room) {
+                found = true;
+                cout << "Current details:\n";
+                printHeader();
+                printCustomer(c);
+                cout << "\n";
+
+                cout << "Enter new details:\n";
+                cout << "Enter Full Name: ";
+                getline(cin, c.name);
+                cout << "Enter Address: ";
+                getline(cin, c.address);
+                cout << "Enter Phone Number: ";
+                getline(cin, c.phonenumber);
+                cout << "Enter Nationality: ";
+                getline(cin, c.nationality);
+                cout << "Enter Email: ";
+                getline(cin, c.email);
+                cout << "Enter Period (days): ";
+                getline(cin, c.period);
+                cout << "Enter Arrival Date (dd-mm-yyyy): ";
+                getline(cin, c.arrivaldate);
+            }
+
+            // Write to temp file (either old data or updated data)
+            temp << c.roomnumber << "|" << c.name << "|" << c.address << "|"
+                 << c.phonenumber << "|" << c.nationality << "|" << c.email << "|"
+                 << c.period << "|" << c.arrivaldate << "\n";
+        }
+
+        file.close();
+        temp.close();
+
+        remove("customers.txt");
+        rename("temp.txt", "customers.txt");
+
+        if (found) {
+            cout << "Customer details updated successfully!\n";
+        } else {
+            cout << "----------------------------\n";
+            cout << "Customer not found!\n";
+            cout << "----------------------------\n";
+        }
+    }
+};
+
 bool login(string &role) {
-    const string correctUsername = "admin";
+    const string correctUsername = "Admin";
     const string correctPassword = "admin123";
 
     string username, password;
@@ -36,4 +317,75 @@ bool login(string &role) {
     cout << "Program terminated for security.\n";
 
     return false;
+}
+
+int main() {
+    HotelManager hotel;
+    string role;
+
+    if (!login(role)) {
+        return 1;
+    }
+
+    while (true) {
+        cout << "\n============================\n";
+        cout << "    Hotel Management System\n";
+        cout << "============================\n";
+        cout << "1. Add Customer\n";
+        cout << "2. List Customers\n";
+        cout << "3. Search Customer\n";
+        cout << "4. Delete Customer\n";
+        cout << "5. Update Customer\n";
+        cout << "6. Exit\n";
+        cout << "----------------------------\n";
+
+        cout << "Enter your choice: ";
+        int choice;
+        if (!(cin >> choice)) {
+            cin.clear(); // clear error state
+            choice = -1; // set to invalid choice
+        }
+        cin.ignore(1000, '\n'); // clear the input buffer
+
+        string roomInput;
+
+        switch (choice) {
+            case 1:
+                    hotel.addCustomer();
+                break;
+            case 2:
+                hotel.displayCustomers();
+                break;
+            case 3:
+                cout << "Enter Room Number to search: ";
+                getline(cin, roomInput);
+                hotel.searchCustomer(roomInput);
+                break;
+            case 4:
+                    cout << "Enter Room Number to delete: ";
+                    getline(cin, roomInput);
+                    hotel.deleteCustomer(roomInput);
+                break;
+            case 5:
+                    cout << "Enter Room Number to update: ";
+                    getline(cin, roomInput);
+                    hotel.updateCustomer(roomInput);
+                break;
+            case 6:
+                cout << "Exiting...\n";
+                return 0;
+            default:
+                cout << "Invalid choice! Please try again.\n";
+        }
+
+        cout << "Do you want to continue? (y/n): ";
+        string cont;
+        getline(cin, cont);
+        if (cont == "n" || cont == "N") {
+            cout << "Exiting...\n";
+            break;
+        }
+    }
+
+    return 0;
 }
