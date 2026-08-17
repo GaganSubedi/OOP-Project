@@ -1,0 +1,39 @@
+bool login(string &role) {
+    const string correctUsername = "admin";
+    const string correctPassword = "admin123";
+
+    string username, password;
+    const int maxAttempts = 3;
+
+    cout << "\n============================\n";
+    cout << "       HOTEL LOGIN\n";
+    cout << "============================\n";
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+        cout << "Username: ";
+        getline(cin, username);
+
+        cout << "Password: ";
+        getline(cin, password);
+
+        if (username == correctUsername && password == correctPassword) {
+            role = "admin";
+
+            cout << "\n----------------------------\n";
+            cout << "Login successful!\n";
+            cout << "Welcome, " << username << "!\n";
+            cout << "----------------------------\n";
+
+            return true;
+        }
+
+        cout << "\nInvalid username or password!\n";
+        cout << "Attempts remaining: "
+             << maxAttempts - attempt << "\n\n";
+    }
+
+    cout << "Too many failed attempts.\n";
+    cout << "Program terminated for security.\n";
+
+    return false;
+}
